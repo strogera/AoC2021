@@ -1,7 +1,11 @@
 def partOne():
     with open("input.txt", "r") as inputFile:
-        for line in inputFile:
-            elems=line.strip().split()
+        lines = inputFile.readlines()
+        elems = []
+        #elems = lines[0].split()
+        
+        #for x in lines:
+        #    elems.append(x.split())
 
 
 def partTwo():
