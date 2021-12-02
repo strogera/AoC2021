@@ -1,7 +1,11 @@
 import strutils, sequtils, sugar
 
 var
-  directions = readFile("input.txt").strip().splitLines().map(k => k.split()).map(k => (k[0], parseInt(k[1])))
+  directions = readFile("input.txt")
+    .strip()
+    .splitLines()
+    .map(line => (var lineSplit = line.split();
+                 (lineSplit[0], parseInt(lineSplit[1]))))
   posx = 0
   depth = 0
   depth2 = 0
