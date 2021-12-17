@@ -25,6 +25,9 @@ def partOne(partOne = True):
                             break
                         if pos[1] > curMaxy:
                             curMaxy = pos[1]
+                        elif pos[1] < curMaxy:
+                            if partOne and curMaxy != 0 and curMaxy < maxY:
+                                break
                         if pos[0] in range(targetMinx, targetMaxx + 1) and pos[1] in range(targetMiny, targetMaxy + 1):
                             count += 1
                             if curMaxy > maxY:
