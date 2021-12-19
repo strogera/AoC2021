@@ -1,5 +1,4 @@
 from itertools import combinations
-from itertools import permutations
 from collections import defaultdict
 
 class Scanner:
@@ -8,44 +7,16 @@ class Scanner:
         self.pos = None
         self.id = id
 
-
 def addPoints(a , b):
     return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
+
 def subtractPointBfromA(a, b):
     return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
+def manhattan(a, b):
+    return sum(abs(val1-val2) for val1, val2 in zip(a,b))
 
-def partOne():
-    '''
-    rotations = [
-
-        lambda a, b, c: (+a, +b, +c),
-        lambda a, b, c: (+b, +c, +a),
-        lambda a, b, c: (+c, +a, +b),
-        lambda a, b, c: (+c, +b, -a),
-        lambda a, b, c: (+b, +a, -c),
-        lambda a, b, c: (+a, +c, -b),
-        lambda a, b, c: (+a, -b, -c),
-        lambda a, b, c: (+b, -c, -a),
-        lambda a, b, c: (+c, -a, -b),
-        lambda a, b, c: (+c, -b, +a),
-        lambda a, b, c: (+b, -a, +c),
-        lambda a, b, c: (+a, -c, +b),
-        lambda a, b, c: (-a, +b, -c),
-        lambda a, b, c: (-b, +c, -a),
-        lambda a, b, c: (-c, +a, -b),
-        lambda a, b, c: (-c, +b, +a),
-        lambda a, b, c: (-b, +a, +c),
-        lambda a, b, c: (-a, +c, +b),
-        lambda a, b, c: (-a, -b, +c),
-        lambda a, b, c: (-b, -c, +a),
-        lambda a, b, c: (-c, -a, +b),
-        lambda a, b, c: (-c, -b, -a),
-        lambda a, b, c: (-b, -a, -c),
-        lambda a, b, c: (-a, -c, -b)
-        ]
-
-    '''
+def partOne(partOne = True):
     rotations = [
         lambda x, y, z : (x, y, z),
         lambda x, y, z : (x, -y, -z),
@@ -77,62 +48,46 @@ def partOne():
         scannersList = []
         for s in scanners:
             s = s.strip().split('\n')
-            scannersList.append(Scanner(int(s[0].split(' ')[-2]), [list(map(int, x.strip().split(','))) for x in s[1:]]))
+            scannersList.append(Scanner(int(s[0].split(' ')[-2]), set(tuple(list(map(int, x.strip().split(',')))) for x in s[1:])))
 
-        #matched = {0:0}
         matched = set()
-        matchedDistanceFromZero = {0:(0, 0, 0)}
-        beacons = set()
-        #matchedDist = {0 : (0, 0, 0)}
-        allpointsFromZero = set()
-        prevPickS = None
-        pickCurS = None
+        pickCurS = scannersList[0]
         scannersList[0].pos = (0, 0, 0)
-        picked = [ scannersList[0]]
+        partTwo = []
         while len(matched) < len(scannersList):
-            if pickCurS and pickCurS == picked[-1]:
-                picked.pop()
-                if not picked:
-                    break
-            pickCurS = picked[-1]
-            print(pickCurS.id)
             for rot in rotations:
-                dx = defaultdict(list)
+                dx = defaultdict(int)
+                found = False
                 for p in pickCurS.detectedPoints:
                     for scanner in scannersList:
-                        if scanner.id not in matched:# and scanner.id != pickCurS.id:
-                            for j, p2 in enumerate(scanner.detectedPoints):
-                                    cp = rot(*p2)
-                                    dp = subtractPointBfromA(p, cp)
-                                    dx[dp].append((j))
+                        if scanner.id not in matched:
+                            for p2 in scanner.detectedPoints:
+                                cp = rot(*p2)
+                                dp = subtractPointBfromA(p, cp)
+                                dx[dp] += 1
+                                if dx[dp] >= 12:
+                                    matched.add(scanner.id)
+                                    partTwo.append(dp)
+                                    found = True
+                                    break
+                        if found:
+                            break
+                    if found:
+                        break
+                if found:
+                    for k in scanner.detectedPoints:
+                        r = rot(*k)
+                        pickCurS.detectedPoints.add(addPoints(r, dp))
+        if partOne:
+            return len(pickCurS.detectedPoints)
 
-                                    if len(dx[dp]) >= 12:
-                                        print("matched ", pickCurS.id, scanner.id, dp)
-                                        #scanner.pos = subtractPointBfromA(dp , pickCurS.pos)
-                                        scanner.pos = addPoints(dp , pickCurS.pos)
-                                        #scanner.pos = subtractPointBfromA(pickCurS.pos, dp)
-                                        print(scanner.pos)
-                                        matched.add(scanner.id)
-                                        for k in scanner.detectedPoints:
-                                            r = rot(*k)
-                                            allpointsFromZero.add(addPoints(r, scanner.pos))
-                                            #allpointsFromZero.add(addPoints(k, scanner.pos))
-                                        picked.append(scanner)
-        print(len(allpointsFromZero))
-        print((allpointsFromZero))
-        print(matched)
-        print(matchedDistanceFromZero)
+        maxx = 0
+        for x,y in combinations(partTwo, 2):
+            maxx = max(manhattan(x,y), maxx)
+        return maxx
 
-
-
-
-
-
-
-def partTwo():
-    return 'unknown'
 
 print("Answer for part 1: ")
 print(partOne())
 print("Answer for part 2: ")
-print(partTwo())
+print(partOne(False))
