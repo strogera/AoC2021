@@ -1,11 +1,6 @@
 from itertools import combinations
 from collections import defaultdict
 
-class Scanner:
-    def __init__(self, id, listOfPoints):
-        self.detectedPoints = listOfPoints
-        self.pos = None
-        self.id = id
 
 def addPoints(a , b):
     return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
@@ -43,43 +38,34 @@ def partOne(partOne = True):
         lambda x, y, z : (-z, y, x),
         lambda x, y, z : (-z, -y, -x)
     ]
+
     with open("input.txt", "r") as inputFile:
         scanners = inputFile.read().split('\n\n')
         scannersList = []
         for s in scanners:
             s = s.strip().split('\n')
-            scannersList.append(Scanner(int(s[0].split(' ')[-2]), set(tuple(list(map(int, x.strip().split(',')))) for x in s[1:])))
-
+            scannersList.append(set(tuple(list(map(int, x.strip().split(',')))) for x in s[1:]))
         matched = set()
-        pickCurS = scannersList[0]
-        scannersList[0].pos = (0, 0, 0)
+        curScanner = set(scannersList[0])
+        matched.add(0)
         partTwo = []
         while len(matched) < len(scannersList):
-            for rot in rotations:
-                dx = defaultdict(int)
-                found = False
-                for p in pickCurS.detectedPoints:
-                    for scanner in scannersList:
-                        if scanner.id not in matched:
-                            for p2 in scanner.detectedPoints:
-                                cp = rot(*p2)
-                                dp = subtractPointBfromA(p, cp)
-                                dx[dp] += 1
-                                if dx[dp] >= 12:
-                                    matched.add(scanner.id)
-                                    partTwo.append(dp)
-                                    found = True
+            for rotate in rotations:
+                inCommon = defaultdict(int)
+                for point1 in list(curScanner):
+                    for id, scanner in enumerate(scannersList):
+                        if id not in matched:
+                            for point2 in scanner:
+                                diff = subtractPointBfromA(point1, rotate(*point2))
+                                inCommon[diff] += 1
+                                if inCommon[diff] >= 12:
+                                    matched.add(id)
+                                    partTwo.append(diff)
+                                    for k in scanner:
+                                        curScanner.add(addPoints(rotate(*k), diff))
                                     break
-                        if found:
-                            break
-                    if found:
-                        break
-                if found:
-                    for k in scanner.detectedPoints:
-                        r = rot(*k)
-                        pickCurS.detectedPoints.add(addPoints(r, dp))
         if partOne:
-            return len(pickCurS.detectedPoints)
+            return len(curScanner)
 
         maxx = 0
         for x,y in combinations(partTwo, 2):
